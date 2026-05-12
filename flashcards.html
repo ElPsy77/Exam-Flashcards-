@@ -1,0 +1,471 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Exam Flashcards — Professional English</title>
+<link href="https://fonts.googleapis.com/css2?family=Unbounded:wght@400;700&family=Manrope:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --bg: #0d0f14;
+    --surface: #161a22;
+    --card-front: #1c2130;
+    --card-back: #0f2a1e;
+    --accent: #3dffa0;
+    --accent2: #6ee7ff;
+    --text: #eef2ff;
+    --muted: #7a8aaa;
+    --border: rgba(255,255,255,0.07);
+  }
+
+  body {
+    font-family: 'Manrope', sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 32px 16px 60px;
+    background-image: radial-gradient(ellipse 80% 50% at 50% -10%, rgba(61,255,160,0.08), transparent);
+  }
+
+  header {
+    text-align: center;
+    margin-bottom: 36px;
+  }
+
+  .label {
+    font-family: 'Unbounded', sans-serif;
+    font-size: 10px;
+    letter-spacing: 0.25em;
+    color: var(--accent);
+    text-transform: uppercase;
+    margin-bottom: 10px;
+  }
+
+  h1 {
+    font-family: 'Unbounded', sans-serif;
+    font-size: clamp(20px, 5vw, 32px);
+    font-weight: 700;
+    line-height: 1.2;
+    background: linear-gradient(135deg, var(--text) 40%, var(--accent2));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+
+  .subtitle {
+    margin-top: 8px;
+    color: var(--muted);
+    font-size: 13px;
+  }
+
+  /* Progress */
+  .progress-wrap {
+    width: 100%;
+    max-width: 540px;
+    margin-bottom: 24px;
+  }
+  .progress-info {
+    display: flex;
+    justify-content: space-between;
+    font-size: 12px;
+    color: var(--muted);
+    margin-bottom: 6px;
+  }
+  .progress-bar {
+    width: 100%;
+    height: 4px;
+    background: var(--surface);
+    border-radius: 99px;
+    overflow: hidden;
+  }
+  .progress-fill {
+    height: 100%;
+    background: linear-gradient(90deg, var(--accent), var(--accent2));
+    border-radius: 99px;
+    transition: width 0.4s ease;
+  }
+
+  /* Card */
+  .scene {
+    width: 100%;
+    max-width: 540px;
+    height: 340px;
+    perspective: 1200px;
+    cursor: pointer;
+    margin-bottom: 28px;
+  }
+
+  .card {
+    width: 100%;
+    height: 100%;
+    position: relative;
+    transform-style: preserve-3d;
+    transition: transform 0.55s cubic-bezier(.4,0,.2,1);
+    border-radius: 20px;
+  }
+
+  .card.flipped { transform: rotateY(180deg); }
+
+  .face {
+    position: absolute;
+    inset: 0;
+    border-radius: 20px;
+    padding: 32px 28px;
+    backface-visibility: hidden;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    border: 1px solid var(--border);
+  }
+
+  .face.front {
+    background: var(--card-front);
+    background-image: radial-gradient(ellipse at top right, rgba(110,231,255,0.06), transparent 60%);
+  }
+
+  .face.back {
+    background: var(--card-back);
+    background-image: radial-gradient(ellipse at bottom left, rgba(61,255,160,0.08), transparent 60%);
+    transform: rotateY(180deg);
+  }
+
+  .card-tag {
+    font-family: 'Unbounded', sans-serif;
+    font-size: 9px;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    margin-bottom: 16px;
+  }
+  .face.front .card-tag { color: var(--accent2); }
+  .face.back .card-tag { color: var(--accent); }
+
+  .card-number {
+    position: absolute;
+    top: 20px;
+    right: 24px;
+    font-family: 'Unbounded', sans-serif;
+    font-size: 11px;
+    color: var(--muted);
+  }
+
+  .card-question {
+    font-size: clamp(15px, 3.5vw, 19px);
+    font-weight: 600;
+    line-height: 1.45;
+    color: var(--text);
+  }
+
+  .card-hint {
+    margin-top: 16px;
+    font-size: 12px;
+    color: var(--muted);
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+
+  .card-answer {
+    font-size: clamp(13px, 3vw, 15px);
+    font-weight: 400;
+    line-height: 1.7;
+    color: #cce8d8;
+  }
+
+  .flip-hint {
+    font-size: 11px;
+    color: var(--muted);
+    text-align: center;
+    margin-bottom: 20px;
+    letter-spacing: 0.05em;
+  }
+
+  /* Controls */
+  .controls {
+    display: flex;
+    gap: 12px;
+    align-items: center;
+  }
+
+  .btn {
+    font-family: 'Manrope', sans-serif;
+    font-weight: 600;
+    font-size: 13px;
+    border: none;
+    border-radius: 12px;
+    padding: 12px 28px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+  }
+
+  .btn-ghost {
+    background: var(--surface);
+    color: var(--muted);
+    border: 1px solid var(--border);
+  }
+  .btn-ghost:hover { color: var(--text); border-color: rgba(255,255,255,0.15); }
+  .btn-ghost:disabled { opacity: 0.3; cursor: not-allowed; }
+
+  .btn-primary {
+    background: var(--accent);
+    color: #0d0f14;
+  }
+  .btn-primary:hover { background: #5affc0; transform: translateY(-1px); }
+
+  .btn-icon {
+    width: 44px;
+    height: 44px;
+    padding: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 18px;
+    border-radius: 12px;
+  }
+
+  /* All cards list */
+  .all-toggle {
+    margin-top: 40px;
+    width: 100%;
+    max-width: 540px;
+  }
+  .all-toggle-btn {
+    width: 100%;
+    background: none;
+    border: 1px dashed var(--border);
+    color: var(--muted);
+    font-family: 'Manrope', sans-serif;
+    font-size: 12px;
+    padding: 10px;
+    border-radius: 10px;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+  .all-toggle-btn:hover { border-color: var(--accent); color: var(--accent); }
+
+  .all-list { display: none; margin-top: 16px; }
+  .all-list.open { display: block; }
+
+  .all-item {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 16px 20px;
+    margin-bottom: 10px;
+  }
+  .all-q {
+    font-weight: 600;
+    font-size: 13px;
+    color: var(--accent2);
+    margin-bottom: 8px;
+  }
+  .all-a {
+    font-size: 13px;
+    line-height: 1.65;
+    color: #b0c4d0;
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="label">Professional English</div>
+  <h1>Exam Flashcards</h1>
+  <p class="subtitle">20 topics · Click card to see the answer</p>
+</header>
+
+<div class="progress-wrap">
+  <div class="progress-info">
+    <span id="prog-label">Card 1 of 20</span>
+    <span id="prog-pct">0%</span>
+  </div>
+  <div class="progress-bar"><div class="progress-fill" id="prog-fill" style="width:5%"></div></div>
+</div>
+
+<div class="scene" id="scene" onclick="flipCard()">
+  <div class="card" id="card">
+    <div class="face front">
+      <span class="card-number" id="card-num">01 / 20</span>
+      <div class="card-tag">Question</div>
+      <div class="card-question" id="q-text"></div>
+      <div class="card-hint">
+        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+        Tap to reveal answer
+      </div>
+    </div>
+    <div class="face back">
+      <span class="card-number" id="card-num-b">01 / 20</span>
+      <div class="card-tag">Answer</div>
+      <div class="card-answer" id="a-text"></div>
+    </div>
+  </div>
+</div>
+
+<p class="flip-hint">⟵ Prev &nbsp;|&nbsp; Next ⟶</p>
+
+<div class="controls">
+  <button class="btn btn-ghost btn-icon" id="btn-prev" onclick="go(-1)" disabled>←</button>
+  <button class="btn btn-ghost" onclick="shuffle()">🔀 Shuffle</button>
+  <button class="btn btn-primary" onclick="go(1)" id="btn-next">Next →</button>
+</div>
+
+<div class="all-toggle">
+  <button class="all-toggle-btn" onclick="toggleAll()">📋 Show all cards as list</button>
+  <div class="all-list" id="all-list"></div>
+</div>
+
+<script>
+const DATA = [
+  {
+    q: "What is the digital divide in Kazakhstan?",
+    a: "The digital divide means that some people have access to the internet and computers, but others do not. In Kazakhstan, people in big cities like Almaty and Astana usually have good internet access. But people in small villages often have slow or no internet. This is a big problem because not everyone has equal opportunities."
+  },
+  {
+    q: "How does the digital divide affect education?",
+    a: "When students do not have internet or computers, they cannot learn online. They cannot watch educational videos, do research, or join online classes. Students in cities have more opportunities to study than students in rural areas. This makes education unfair and unequal."
+  },
+  {
+    q: "What are the outcomes of the digital divide?",
+    a: "The digital divide creates inequality. People without internet access have fewer job opportunities. They cannot use online banking or government services. They also cannot communicate easily with others. This makes it harder for them to develop their skills and improve their lives."
+  },
+  {
+    q: "What are the reasons behind the digital divide?",
+    a: "There are several reasons. First, the internet is expensive for some people. Second, in rural areas there is poor infrastructure — no cables or mobile towers. Third, some people do not have enough education to use technology. Fourth, older people sometimes do not know how to use computers or smartphones."
+  },
+  {
+    q: "What are the different categories of computer crime?",
+    a: "There are several types of computer crime. Hacking means breaking into someone's computer without permission. Phishing means tricking people to give their passwords. Malware is harmful software that damages your computer. Identity theft means stealing someone's personal information. Online fraud means cheating people out of money."
+  },
+  {
+    q: "What steps can we take to prevent cybercrime?",
+    a: "To prevent cybercrime, you should use strong passwords and change them regularly. Install antivirus software on your computer. Do not click on suspicious links or open strange emails. Use two-factor authentication. Keep your software updated. Be careful about what personal information you share online."
+  },
+  {
+    q: "What are the effects of cybercrime?",
+    a: "Cybercrime can cause serious problems. People can lose money if hackers steal their bank details. Companies can lose important data. People can feel afraid and unsafe online. The government also loses money fighting cybercrime. It can damage a person's reputation if their private information is stolen."
+  },
+  {
+    q: "What are various forms of cybercrime?",
+    a: "Cybercrime takes many forms. Ransomware locks your files and asks for money. Cyberbullying means harassing people online. Spam is unwanted emails, sometimes with viruses. DDoS attacks overload websites. Online scams trick people into paying for fake things. All of these are dangerous and illegal."
+  },
+  {
+    q: "What are the guidelines for safe internet use?",
+    a: "To use the internet safely, always use strong and unique passwords. Do not share your personal information with strangers. Check that websites are secure — look for 'https'. Log out of accounts when you finish. Do not download files from unknown sources. Talk to an adult if something makes you uncomfortable online."
+  },
+  {
+    q: "What are effective methods for online self-protection?",
+    a: "You can protect yourself online in several ways. Use a VPN to hide your internet activity. Enable two-factor authentication on all accounts. Check your privacy settings on social media. Use a password manager to create strong passwords. Regularly check if your email has been hacked on websites like HaveIBeenPwned."
+  },
+  {
+    q: "How do we protect ourselves on the internet today?",
+    a: "Today people use many tools to stay safe online. Antivirus programs protect computers from malware. Firewalls block dangerous connections. People use strong passwords and two-factor authentication. Many people also use VPNs to browse safely. Banks use special encryption to protect our money."
+  },
+  {
+    q: "How can we keep our passwords safe?",
+    a: "A safe password should be long — at least 8 characters. Use a mix of letters, numbers, and symbols. Do not use your name or birthday. Never share your password with anyone. Use a different password for each website. A password manager can help you remember all your passwords safely."
+  },
+  {
+    q: "What cybercrimes happen on social media?",
+    a: "Social media has several types of cybercrime. Cyberbullying means people say mean things or threaten others online. Fake profiles are created to trick or scam people. Phishing links are shared to steal passwords. Personal photos can be stolen and misused. Scammers also send fake messages pretending to be friends."
+  },
+  {
+    q: "What should you do when someone hacks your computer?",
+    a: "If your computer is hacked, disconnect it from the internet immediately. Change all your passwords from a different, safe device. Run an antivirus scan to remove malware. Inform your bank if you think your financial details were stolen. Report the hack to the police or cybersecurity service. Ask a specialist for help."
+  },
+  {
+    q: "What steps should you follow when your smartphone is attacked?",
+    a: "If your smartphone is attacked, first turn off the internet connection. Change your passwords for important accounts. Delete any suspicious apps you did not install. Run a security scan. If the problem continues, do a factory reset — but back up your data first. Contact your mobile provider if necessary."
+  },
+  {
+    q: "Discuss the data storage you use and its advantages.",
+    a: "I use cloud storage, like Google Drive. It is very convenient because I can access my files from any device anywhere. It also saves space on my phone. Cloud storage is safe because the data is backed up automatically. The main advantage is that I never lose my files if my phone is broken or lost."
+  },
+  {
+    q: "Will computers ever match human intelligence?",
+    a: "This is a very interesting question. Today, computers can do many tasks better than humans — like calculations or playing chess. But computers do not have emotions, creativity, or common sense like humans do. Many scientists believe that artificial intelligence will become very powerful in the future, but true human-like intelligence is still a big challenge."
+  },
+  {
+    q: "What are the emerging trends in IT?",
+    a: "There are many exciting trends in IT today. Artificial intelligence is growing very fast. Cloud computing lets us store and use data online. The Internet of Things connects everyday devices to the internet. Cybersecurity is becoming more important. Also, 5G networks make internet faster. These trends are changing how we live and work."
+  },
+  {
+    q: "What are the benefits and drawbacks of your chosen data storage device?",
+    a: "I use a USB flash drive. The main benefit is that it is small, cheap, and easy to carry. I can quickly copy files between computers. However, it also has drawbacks. A USB drive can be lost or broken easily. It can also get infected with viruses. The storage capacity is limited compared to cloud storage."
+  },
+  {
+    q: "What are common network issues in daily life?",
+    a: "Many people experience network problems every day. Slow internet speed makes it hard to watch videos or work online. Connection drops happen when the signal is weak. Sometimes websites do not open because of server problems. Wi-Fi can be blocked by walls or other devices. These issues can be frustrating, especially when working or studying from home."
+  }
+];
+
+let order = [...Array(DATA.length).keys()];
+let current = 0;
+let flipped = false;
+
+function render() {
+  const idx = order[current];
+  const d = DATA[idx];
+  document.getElementById('q-text').textContent = d.q;
+  document.getElementById('a-text').textContent = d.a;
+  const num = String(current + 1).padStart(2, '0') + ' / ' + DATA.length;
+  document.getElementById('card-num').textContent = num;
+  document.getElementById('card-num-b').textContent = num;
+  document.getElementById('prog-label').textContent = `Card ${current + 1} of ${DATA.length}`;
+  const pct = Math.round(((current + 1) / DATA.length) * 100);
+  document.getElementById('prog-pct').textContent = pct + '%';
+  document.getElementById('prog-fill').style.width = Math.max(5, pct) + '%';
+  document.getElementById('btn-prev').disabled = current === 0;
+  document.getElementById('btn-next').disabled = current === DATA.length - 1;
+}
+
+function flipCard() {
+  flipped = !flipped;
+  document.getElementById('card').classList.toggle('flipped', flipped);
+}
+
+function go(dir) {
+  current = Math.max(0, Math.min(DATA.length - 1, current + dir));
+  flipped = false;
+  document.getElementById('card').classList.remove('flipped');
+  render();
+}
+
+function shuffle() {
+  for (let i = order.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [order[i], order[j]] = [order[j], order[i]];
+  }
+  current = 0;
+  flipped = false;
+  document.getElementById('card').classList.remove('flipped');
+  render();
+}
+
+function toggleAll() {
+  const list = document.getElementById('all-list');
+  list.classList.toggle('open');
+  if (list.classList.contains('open') && list.innerHTML === '') {
+    list.innerHTML = DATA.map((d, i) => `
+      <div class="all-item">
+        <div class="all-q">${i + 1}. ${d.q}</div>
+        <div class="all-a">${d.a}</div>
+      </div>
+    `).join('');
+  }
+}
+
+// Keyboard navigation
+document.addEventListener('keydown', e => {
+  if (e.key === 'ArrowRight') go(1);
+  if (e.key === 'ArrowLeft') go(-1);
+  if (e.key === ' ') { e.preventDefault(); flipCard(); }
+});
+
+render();
+</script>
+</body>
+</html>
